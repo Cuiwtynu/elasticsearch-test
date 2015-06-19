@@ -79,4 +79,5 @@ dependencies {
 	compile 'junit:junit:4.11'
 	compile 'org.elasticsearch:elasticsearch:1.5.2'
 	compile "net.sf.json-lib:json-lib:2.4:jdk15"
+	compile "commons-codec:commons-codec:1.8"
 }
