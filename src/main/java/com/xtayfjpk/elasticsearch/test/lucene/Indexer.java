@@ -16,13 +16,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import com.xtayfjpk.elasticsearch.test.lucene.analyzer.SynonymAnalyzer;
+
 @SuppressWarnings("deprecation")
 public class Indexer {
 	private IndexWriter writer;
 	
-	public Indexer(String indexDir) throws IOException {
+	public Indexer(String indexDir, Analyzer analyzer) throws IOException {
 		Directory dir = FSDirectory.open(new File(indexDir));
-		Analyzer analyzer = new StandardAnalyzer();
 		IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_4_1_0, analyzer);
 		writer = new IndexWriter(dir, conf);
 	}
@@ -59,7 +60,7 @@ public class Indexer {
 		Document document = new Document();
 		document.add(new Field("contents", new FileReader(file)));
 		
-		Field filesize = new LongField("filesize", file.length(), Field.Store.YES);;
+		Field filesize = new LongField("filesize", file.length(), Field.Store.YES);
 		document.add(filesize);
 		
 		document.add(new Field("filename", file.getName(), Field.Store.YES, Field.Index.NOT_ANALYZED));
@@ -78,7 +79,8 @@ public class Indexer {
 	public static void main(String[] args) throws Exception {
 		String indexDir = "lucene-index";
 		String dataDir = "lucene_index_source";
-		Indexer indexer = new Indexer(indexDir);
+		Analyzer analyzer = new SynonymAnalyzer();
+		Indexer indexer = new Indexer(indexDir, analyzer);
 		int numDocs = indexer.index(dataDir, null);
 		indexer.close();
 		System.out.println("indexed doc count: " + numDocs);

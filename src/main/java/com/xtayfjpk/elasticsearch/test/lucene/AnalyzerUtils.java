@@ -2,13 +2,10 @@ package com.xtayfjpk.elasticsearch.test.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
-
-import com.xtayfjpk.elasticsearch.test.lucene.analyzer.MetaphoneReplacementAnalyzer;
 
 public class AnalyzerUtils {
 	
@@ -30,9 +27,4 @@ public class AnalyzerUtils {
 		stream.close();
 	}
 
-	public static void main(String[] args) throws Exception {
-		Analyzer analyzer = new MetaphoneReplacementAnalyzer();
-		String text = "Adds room a document to this room index. If the room document 100 contains room";
-		outputTerms(analyzer, text);
-	}
 }
