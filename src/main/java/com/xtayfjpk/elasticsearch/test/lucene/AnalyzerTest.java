@@ -1,6 +1,7 @@
 package com.xtayfjpk.elasticsearch.test.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -21,6 +22,13 @@ public class AnalyzerTest {
 		AnalyzerUtils.outputTerms(analyzer, text);
 	}
 	
+	@Test
+	public void testChineseAnalyzer() throws Exception {
+		//ChineseAnalyzer已废弃，使用StandardAnalyzer代替
+		Analyzer analyzer = new StandardAnalyzer();
+		String text = "Adds room a document to this room index. If the room document 100 contains room. 中华人民共和国";
+		AnalyzerUtils.outputTerms(analyzer, text);
+	}
 	
 	@Test
 	public void testSynonymAnalyzer() throws Exception {

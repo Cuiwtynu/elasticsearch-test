@@ -13,6 +13,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 public class LuceneUtils {
+	public static final String indexDir = "lucene-index";
 	
 	public static IndexSearcher getSearcher(String indexDir) throws IOException {
 		Directory dir = FSDirectory.open(new File(indexDir));
@@ -24,7 +25,11 @@ public class LuceneUtils {
 	public static void outputDocs(IndexSearcher searcher, TopDocs hits)	throws IOException {
 		for(ScoreDoc doc : hits.scoreDocs) {
 			Document document = searcher.doc(doc.doc);
-			System.out.println(document.get("fullpath"));
+			StringBuilder builder = new StringBuilder();
+			builder.append("docId:").append(doc.doc).append(", ");
+			builder.append("filesize:").append(document.get("filesize")).append(", ");
+			builder.append("fullpath:").append(document.get("fullpath"));
+			System.out.println(builder);
 		}
 	}
 }
