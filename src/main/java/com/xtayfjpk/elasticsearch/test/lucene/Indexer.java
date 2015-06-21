@@ -65,7 +65,7 @@ public class Indexer {
 		
 		document.add(new Field("filename", file.getName(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 		//如果Store.NO则表示该文档中的该字段不会进行非独存储，也就是调用doc.get(fieldName)是会直接返回null，但是会建立索引，可供查询
-		document.add(new Field("fullpath", file.getCanonicalPath(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		document.add(new Field("fullpath", file.getCanonicalPath(), Field.Store.YES, Field.Index.ANALYZED));
 		return document;
 	}
 	

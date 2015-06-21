@@ -18,7 +18,7 @@ public class AnalyzerTest {
 	@Test
 	public void testAnalysis() throws Exception {
 		Analyzer analyzer = new SynonymAnalyzer();
-		String text = "Adds room a document to this room index. If the room document 100 contains room";
+		String text = "D:\\work\\MyProject\\elasticsearch-test\\lucene_index_source\\IndexWriter addDocument's a javadoc .txt";
 		AnalyzerUtils.outputTerms(analyzer, text);
 	}
 	

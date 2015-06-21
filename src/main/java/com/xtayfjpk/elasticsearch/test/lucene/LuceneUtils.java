@@ -7,6 +7,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -27,9 +28,16 @@ public class LuceneUtils {
 			Document document = searcher.doc(doc.doc);
 			StringBuilder builder = new StringBuilder();
 			builder.append("docId:").append(doc.doc).append(", ");
+			builder.append("score:").append(doc.score).append(", ");
 			builder.append("filesize:").append(document.get("filesize")).append(", ");
 			builder.append("fullpath:").append(document.get("fullpath"));
 			System.out.println(builder);
 		}
+	}
+	
+	public static void outputQueryResult(Query query) throws IOException {
+		IndexSearcher searcher = LuceneUtils.getSearcher(indexDir);
+		TopDocs hits = searcher.search(query, 10);
+		LuceneUtils.outputDocs(searcher, hits);
 	}
 }

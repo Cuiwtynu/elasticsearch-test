@@ -8,6 +8,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.junit.Test;
 
+import com.xtayfjpk.elasticsearch.test.lucene.analyzer.SynonymAnalyzer;
+
 public class QueryParserTest {
 	private static final String indexDir = "lucene-index";
 	
@@ -52,6 +54,7 @@ public class QueryParserTest {
 	
 	/**
 	 * 查询语句中用双引号括起来的项可以用来创建一个PhraseQuery，引号之间的文本将被分析，分析的结果与使用的分词器有关
+	 * 并且短语需要两个单词以上
 	 */
 	@Test
 	public void testPhraseQuery() throws Exception {
@@ -123,5 +126,24 @@ public class QueryParserTest {
 		System.out.println(query.getBoost());
 		System.out.println(query.getClass());
 		System.out.println(query.toString());
+	}
+	
+	/**
+	 * 查询语句中用双引号括起来的项可以用来创建一个PhraseQuery，但因document含有同义词，
+	 * 则创建了一个MultiPhraseQuery：contents:"room (document doc documentation)"
+	 */
+	@Test
+	public void testMultiPhraseQuery() throws Exception {
+		Analyzer a = new SynonymAnalyzer();
+		QueryParser parser = new QueryParser("contents", a);
+		//parser.setLowercaseExpandedTerms(false);//禁止将查询语句转换为小写
+		Query query = parser.parse("\"room document\"");
+		System.out.println(query.getBoost());
+		System.out.println(query.getClass());
+		System.out.println(query.toString());
+		
+		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
+		TopDocs hits = searcher.search(query, 10);
+		LuceneUtils.outputDocs(searcher, hits);
 	}
 }
