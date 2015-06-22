@@ -1,12 +1,21 @@
 package com.xtayfjpk.elasticsearch.test.lucene;
 
 
+import java.io.IOException;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreProvider;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
+import org.apache.lucene.queries.function.ValueSource;
+import org.apache.lucene.queries.function.valuesource.LongFieldSource;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.FuzzyQuery;
@@ -14,6 +23,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixFilter;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -213,4 +223,42 @@ public class QueryTest {
 	}
 
 	
+	/**
+	 * ConstantScoreQuery将过滤器转换成查询以用于随后的搜索，生成的查询只对过滤器所包含的文档进行匹配，然后赋予它们与查询加权相等的评分
+	 */
+	@Test
+	public void testConstantScoreQuery() throws Exception {
+		PrefixFilter filter = new PrefixFilter(new Term("filename", "Move"));
+		ConstantScoreQuery query = new ConstantScoreQuery(filter);
+		query.setBoost(3.0f);
+		LuceneUtils.outputQueryResult(query);
+	}
+	
+	/**
+	 * 自定义分数查询
+	 */
+	@Test
+	public void testCustomScoreQuery() throws Exception {
+		TermQuery subQuery = new TermQuery(new Term("contents", "document"));
+		CustomScoreQuery query = new CustomScoreQuery(subQuery) {
+			@Override
+			protected CustomScoreProvider getCustomScoreProvider(AtomicReaderContext context) throws IOException {
+				return new CustomScoreProvider(context) {
+					@Override
+					public float customScore(int doc, float subQueryScore, float valSrcScore) throws IOException {
+						return 5.0f;//自定义分数值
+					}
+				};
+			}
+		};
+		LuceneUtils.outputQueryResult(query);
+	}
+	
+	@Test
+	public void testFunctionQuery() throws Exception {
+		//通过某字段的值作为分数
+		ValueSource func = new LongFieldSource("filesize");
+		FunctionQuery query = new FunctionQuery(func);
+		LuceneUtils.outputQueryResult(query);
+	}
 }	
