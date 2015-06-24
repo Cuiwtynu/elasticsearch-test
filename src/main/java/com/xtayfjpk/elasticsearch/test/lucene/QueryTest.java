@@ -23,6 +23,7 @@ import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PhraseQuery;
@@ -47,6 +48,15 @@ import org.apache.lucene.util.Counter;
 import org.junit.Test;
 
 public class QueryTest {
+	
+	/**
+	 * 匹配所有文档
+	 */
+	@Test
+	public void testMatchAllDocsQuery() throws Exception {
+		Query query = new MatchAllDocsQuery();
+		LuceneUtils.outputQueryResult(query);
+	}
 	
 	/**
 	 * TermQuery可用于NOT_ANALYZED与ANALYZED字段，term字段串为一个整体进行精确匹配(被检索的字段也必须含有一个以上一模一样的term)，

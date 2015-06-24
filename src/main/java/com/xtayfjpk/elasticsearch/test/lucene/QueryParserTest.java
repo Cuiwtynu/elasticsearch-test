@@ -2,6 +2,7 @@ package com.xtayfjpk.elasticsearch.test.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -9,6 +10,7 @@ import org.apache.lucene.search.TopDocs;
 import org.junit.Test;
 
 import com.xtayfjpk.elasticsearch.test.lucene.analyzer.SynonymAnalyzer;
+import com.xtayfjpk.elasticsearch.test.lucene.queryparser.MyQueryParser;
 
 public class QueryParserTest {
 	private static final String indexDir = "lucene-index";
@@ -33,7 +35,7 @@ public class QueryParserTest {
 		Analyzer a = new StandardAnalyzer();
 		QueryParser parser = new QueryParser("subject", a);
 		//parser.setLowercaseExpandedTerms(false);//禁止将查询语句转换为小写
-		Query query = parser.parse("[Q TO V");
+		Query query = parser.parse("[10 TO 100]");
 		System.out.println(query.getClass());
 		System.out.println(query.toString());
 	}
@@ -145,5 +147,16 @@ public class QueryParserTest {
 		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
 		TopDocs hits = searcher.search(query, 10);
 		LuceneUtils.outputDocs(searcher, hits);
+	}
+	
+	@Test
+	public void testCustomQueryParser() throws Exception {
+		Analyzer a = new StandardAnalyzer();
+		QueryParser parser = new MyQueryParser("filesize", a);
+		parser.setDateResolution(DateTools.Resolution.DAY);
+		Query query = parser.parse("contents:\"room document\"~2");
+		System.out.println(query.getClass());
+		System.out.println(query.toString());
+		LuceneUtils.outputQueryResult(query);
 	}
 }
