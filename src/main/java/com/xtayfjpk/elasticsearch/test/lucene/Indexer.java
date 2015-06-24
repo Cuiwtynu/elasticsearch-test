@@ -70,6 +70,10 @@ public class Indexer {
 		return document;
 	}
 	
+	public IndexWriter getWriter() {
+		return writer;
+	}
+	
 	private static class TextFileFilter implements FileFilter {
 		@Override
 		public boolean accept(File pathname) {

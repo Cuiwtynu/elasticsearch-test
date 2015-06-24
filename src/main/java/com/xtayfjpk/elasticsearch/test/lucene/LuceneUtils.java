@@ -3,15 +3,19 @@ package com.xtayfjpk.elasticsearch.test.lucene;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+
+import com.xtayfjpk.elasticsearch.test.lucene.analyzer.SynonymAnalyzer;
 
 public class LuceneUtils {
 	public static final String indexDir = "lucene-index";
@@ -21,6 +25,12 @@ public class LuceneUtils {
 		IndexReader reader = DirectoryReader.open(dir);
 		IndexSearcher searcher = new IndexSearcher(reader);
 		return searcher;
+	}
+	
+	public static IndexWriter getWriter(String indexDir) throws Exception {
+		Analyzer analyzer = new SynonymAnalyzer();
+		Indexer indexer = new Indexer(indexDir, analyzer);
+		return indexer.getWriter();
 	}
 	
 	public static void outputDocs(IndexSearcher searcher, TopDocs hits)	throws IOException {

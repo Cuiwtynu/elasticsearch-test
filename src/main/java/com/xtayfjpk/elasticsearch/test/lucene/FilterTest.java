@@ -3,6 +3,7 @@ package com.xtayfjpk.elasticsearch.test.lucene;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.FieldCacheRangeFilter;
 import org.apache.lucene.search.FieldCacheTermsFilter;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
@@ -13,6 +14,8 @@ import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.BytesRef;
 import org.junit.Test;
+
+import com.xtayfjpk.elasticsearch.test.lucene.filter.MaxFilesizeFilter;
 
 public class FilterTest {
 	
@@ -79,4 +82,11 @@ public class FilterTest {
 		LuceneUtils.outputDocs(searcher, hits);
 	}
 	
+	@Test
+	public void testCustomFilter() throws Exception {
+		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
+		Filter filter = new MaxFilesizeFilter(400L);
+		TopDocs hits = searcher.search(new MatchAllDocsQuery(), filter, 10);
+		LuceneUtils.outputDocs(searcher, hits);
+	}
 }
