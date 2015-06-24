@@ -6,7 +6,10 @@ import java.io.IOException;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queries.CustomScoreProvider;
 import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
@@ -29,7 +32,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.TimeLimitingCollector;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -38,6 +43,7 @@ import org.apache.lucene.search.spans.SpanOrQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.Counter;
 import org.junit.Test;
 
 public class QueryTest {
@@ -260,5 +266,38 @@ public class QueryTest {
 		ValueSource func = new LongFieldSource("filesize");
 		FunctionQuery query = new FunctionQuery(func);
 		LuceneUtils.outputQueryResult(query);
+	}
+	
+	
+	/**
+	 * 在索引时必须设置了Field.TermVector参数getTermVector才有返回值，否则为null
+	 */
+	@Test
+	public void testTermVector() throws Exception {
+		IndexReader indexReader = LuceneUtils.getSearcher(LuceneUtils.indexDir).getIndexReader();
+		Terms terms = indexReader.getTermVector(0, "contents");
+		System.out.println(terms);
+		System.out.println(terms.getDocCount());
+		System.out.println(terms.getSumDocFreq());
+		System.out.println(terms.getSumTotalTermFreq());
+		TermsEnum termsEnum = terms.iterator(null);
+		System.out.println(termsEnum);
+		BytesRef term = null;
+		while((term=termsEnum.next())!=null) {
+			System.out.println(term.utf8ToString());
+		}
+	}
+	
+	/**
+	 * 检查超时则会抛异常
+	 */
+	@Test
+	public void testTimeLimitingCollator() throws Exception {
+		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
+		Query query = new TermQuery(new Term("contents", "document"));
+		TopScoreDocCollector collector = TopScoreDocCollector.create(10, true); 
+		searcher.search(query, new TimeLimitingCollector(collector, Counter.newCounter(), 1));
+		System.out.println(collector.getTotalHits());
+		LuceneUtils.outputDocs(searcher, collector.topDocs());
 	}
 }	

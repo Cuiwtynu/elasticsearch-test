@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
@@ -58,7 +57,7 @@ public class Indexer {
 	
 	private Document getDocument(File file) throws Exception {
 		Document document = new Document();
-		document.add(new Field("contents", new FileReader(file)));
+		document.add(new Field("contents", new FileReader(file), Field.TermVector.WITH_POSITIONS_OFFSETS));
 		
 		Field filesize = new LongField("filesize", file.length(), Field.Store.YES);
 		document.add(filesize);

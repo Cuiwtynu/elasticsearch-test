@@ -40,4 +40,5 @@ public class LuceneUtils {
 		TopDocs hits = searcher.search(query, 10);
 		LuceneUtils.outputDocs(searcher, hits);
 	}
+	
 }
