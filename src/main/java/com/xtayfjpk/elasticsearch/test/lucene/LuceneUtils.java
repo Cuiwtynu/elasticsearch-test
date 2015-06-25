@@ -40,6 +40,7 @@ public class LuceneUtils {
 			builder.append("docId:").append(doc.doc).append(", ");
 			builder.append("score:").append(doc.score).append(", ");
 			builder.append("filesize:").append(document.get("filesize")).append(", ");
+			builder.append("filename:").append(document.get("filename")).append(", ");
 			builder.append("fullpath:").append(document.get("fullpath"));
 			System.out.println(builder);
 		}
