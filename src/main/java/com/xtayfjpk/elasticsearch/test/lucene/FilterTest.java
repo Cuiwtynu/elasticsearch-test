@@ -4,10 +4,12 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.FieldCacheRangeFilter;
 import org.apache.lucene.search.FieldCacheTermsFilter;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.PrefixFilter;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeFilter;
@@ -88,5 +90,16 @@ public class FilterTest {
 		Filter filter = new MaxFilesizeFilter(400L);
 		TopDocs hits = searcher.search(new MatchAllDocsQuery(), filter, 10);
 		LuceneUtils.outputDocs(searcher, hits);
+	}
+	
+	/**
+	 * FilteredQuery借助一个Filter对象，IndexSearcher的search()方法会在查询期间执行以此过滤操作
+	 */
+	@Test
+	public void testFilteredQuery() throws Exception {
+		Query query = new MatchAllDocsQuery();
+		Filter filter = new MaxFilesizeFilter(400L);
+		FilteredQuery filteredQuery = new FilteredQuery(query, filter);
+		LuceneUtils.outputQueryResult(filteredQuery);
 	}
 }
