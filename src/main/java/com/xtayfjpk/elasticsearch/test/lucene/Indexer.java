@@ -1,21 +1,24 @@
 package com.xtayfjpk.elasticsearch.test.lucene;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import com.xtayfjpk.elasticsearch.test.lucene.analyzer.SynonymAnalyzer;
 
 @SuppressWarnings("deprecation")
 public class Indexer {
@@ -57,7 +60,7 @@ public class Indexer {
 	
 	private Document getDocument(File file) throws Exception {
 		Document document = new Document();
-		document.add(new Field("contents", new FileReader(file), Field.TermVector.WITH_POSITIONS_OFFSETS));
+		document.add(new Field("contents", readFile(file), Field.Store.YES, Field.Index.ANALYZED, TermVector.WITH_POSITIONS_OFFSETS));
 		
 		Field filesize = new LongField("filesize", file.length(), Field.Store.YES);
 		document.add(filesize);
@@ -80,14 +83,26 @@ public class Indexer {
 			return pathname.getName().toLowerCase().endsWith(".txt");
 		}
 	}
+	
+	private String readFile(File file) throws Exception {
+		StringBuilder builder = new StringBuilder();
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+		String line = null;
+		while((line=bufferedReader.readLine())!=null) {
+			builder.append(line).append("\r");
+		}
+		bufferedReader.close();
+		return builder.toString();
+	}
 
 	public static void main(String[] args) throws Exception {
 		String indexDir = "lucene-index";
 		String dataDir = "lucene_index_source";
-		Analyzer analyzer = new SynonymAnalyzer();
+		Analyzer analyzer = new StandardAnalyzer();
 		Indexer indexer = new Indexer(indexDir, analyzer);
 		int numDocs = indexer.index(dataDir, null);
 		indexer.close();
 		System.out.println("indexed doc count: " + numDocs);
+		
 	}
 }
