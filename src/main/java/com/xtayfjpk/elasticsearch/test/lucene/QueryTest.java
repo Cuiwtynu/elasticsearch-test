@@ -10,12 +10,17 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queries.BoostingQuery;
 import org.apache.lucene.queries.CustomScoreProvider;
 import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.LongFieldSource;
+import org.apache.lucene.queries.mlt.MoreLikeThis;
+import org.apache.lucene.queries.mlt.MoreLikeThisQuery;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.sandbox.queries.FuzzyLikeThisQuery;
+import org.apache.lucene.sandbox.queries.regex.RegexQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
@@ -163,6 +168,9 @@ public class QueryTest {
 		LuceneUtils.outputDocs(searcher, hits);
 	}
 	
+	/**
+	 * 通过设置edit distance来匹配
+	 */
 	@Test
 	public void testFuzzyQuery() throws Exception {
 		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
@@ -310,4 +318,74 @@ public class QueryTest {
 		System.out.println(collector.getTotalHits());
 		LuceneUtils.outputDocs(searcher, collector.topDocs());
 	}
+	
+	
+	/**
+	 * 是否与某文档相似
+	 */
+	@Test
+	public void testMoreLikeThis() throws Exception {
+		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
+		IndexReader indexReader = searcher.getIndexReader();
+		int numDocs = indexReader.maxDoc();
+		
+		MoreLikeThis mlt = new MoreLikeThis(indexReader);
+		mlt.setAnalyzer(new StandardAnalyzer());
+		mlt.setFieldNames(new String[]{"fullpath","contents"});
+		mlt.setMinTermFreq(1);
+		mlt.setMinDocFreq(1);
+		
+		for(int docId=0; docId < numDocs; docId++) {
+			Document doc = indexReader.document(docId);
+			Query query = mlt.like(docId);
+			System.out.println(query.getClass());
+			TopDocs similarDocs = searcher.search(query, 10);
+			System.out.println(similarDocs.totalHits);
+			System.out.println(doc.get("fullpath"));
+			LuceneUtils.outputDocs(searcher, similarDocs);
+		}
+	}
+	
+	/**
+	 * 搜索与指定文本设置是否相似的文档
+	 */
+	@Test
+	public void testMoreLikeThisQuery() throws Exception {
+		MoreLikeThisQuery query = new MoreLikeThisQuery("work document", new String[]{"fullpath"}, new StandardAnalyzer(), "fullpath");
+		query.setMinDocFreq(1);
+		query.setMinTermFrequency(1);
+		LuceneUtils.outputQueryResult(query);
+	}
+	
+	/**
+	 * 不理解
+	 */
+	@Test
+	public void testFuzzyMoreLikeThisQuery() throws Exception {
+		FuzzyLikeThisQuery query = new FuzzyLikeThisQuery(10, new StandardAnalyzer());
+		query.addTerms("wxrk", "fullpath", 0.1f, 1);
+		LuceneUtils.outputQueryResult(query);
+	}
+	
+	/**
+	 * 所有匹配了positiveQuery的文档都会出现在搜索结果中，但如果又匹配了negativeQuery则其评分会在原来的基础上乘以一个加权因子，如例中0.5
+	 */
+	@Test
+	public void testBoostingQuery() throws Exception {
+		Query positiveQuery = new TermQuery(new Term("fullpath", "work"));
+		Query negativeQuery = new TermQuery(new Term("contents", "document"));
+		BoostingQuery query = new BoostingQuery(positiveQuery, negativeQuery, 0.5f);
+		LuceneUtils.outputQueryResult(query);
+	}
+	
+	/**
+	 * 使用Java内置的正则表达式解析器进行匹配
+	 */
+	@Test
+	public void testRegexQuery() throws Exception {
+		RegexQuery query = new RegexQuery(new Term("contents", "doc.*"));
+		//query.setRegexImplementation(new JakartaRegexpCapabilities());//设置正则表达式实现
+		LuceneUtils.outputQueryResult(query);
+	}
+	
 }	

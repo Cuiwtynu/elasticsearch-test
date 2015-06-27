@@ -1,6 +1,7 @@
 package com.xtayfjpk.elasticsearch.test.lucene;
 
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.FieldCacheRangeFilter;
 import org.apache.lucene.search.FieldCacheTermsFilter;
 import org.apache.lucene.search.Filter;
@@ -101,5 +102,17 @@ public class FilterTest {
 		Filter filter = new MaxFilesizeFilter(400L);
 		FilteredQuery filteredQuery = new FilteredQuery(query, filter);
 		LuceneUtils.outputQueryResult(filteredQuery);
+	}
+	
+	/**
+	 * 匹配TermsFilter条件的文档会保留下来
+	 */
+	@Test
+	public void testTermsFilter() throws Exception {
+		Term term = new Term("contents", "document");
+		TermsFilter filter = new TermsFilter(term);
+		IndexSearcher searcher = LuceneUtils.getSearcher(LuceneUtils.indexDir);
+		TopDocs hits = searcher.search(new MatchAllDocsQuery(), filter, 10);
+		LuceneUtils.outputDocs(searcher, hits);
 	}
 }
