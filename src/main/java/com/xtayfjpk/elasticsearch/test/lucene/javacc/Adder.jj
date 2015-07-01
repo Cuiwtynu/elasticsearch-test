@@ -1,0 +1,50 @@
+/** 该处注释不能使用双斜线//，文件编码要使用ANSI */
+
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(Adder)
+
+public class Adder {
+
+  public static void main(String args[]) throws ParseException {
+    Adder parser = new Adder(System.in);
+    parser.Start();
+  }
+
+}
+
+PARSER_END(Adder)
+
+SKIP : {" " | "\r" | "\t" | "\n"}
+TOKEN : {<PLUS:"+">}
+TOKEN : {<NUMBER:(["0"-"9"])+>}
+
+/** Root production. */
+int Start() throws NumberFormatException :
+{
+	//Start函数中有3个变量
+	Token t; int i; int value;
+}
+{
+	//首先要求表达式的第一个一定是个NUMBER
+	t = <NUMBER>
+	//将t的值取出来，解析为整型，放入变量i
+	{i = Integer.parseInt(t.image);}
+	//最后的结果value设为i
+	{value=i;}
+	//紧接着应该是零个或者多个PLUS和NUMBER的组合
+	(
+		<PLUS>
+		//每出现一个NUMBER，都将其赋给t
+		t = <NUMBER>
+		{i = Integer.parseInt(t.image);}
+		{value+=i;}
+	)*
+	//最后的value就是表达式的和
+	{return value;}
+
+}
+
+
